@@ -29,6 +29,9 @@ public class Character : MonoBehaviour
     [SerializeField]
     private AudioSource jumpSound;
 
+    [SerializeField]
+    private ParticleSystem dustParticles;
+
     private Vector3 characterMovement;
     private Vector3 jumpVelocity;
     private Vector3 characterGravity;
@@ -146,6 +149,27 @@ public class Character : MonoBehaviour
         }
     }
 
+    void HandleDustParticles(Vector2 inputMovement)
+    {
+        if (this.dustParticles == null)
+        {
+            return;
+        }
+
+        bool shouldEmit = inputMovement != Vector2.zero
+                          && this.controller.isGrounded
+                          && !this.isJumping;
+
+        if (shouldEmit && !this.dustParticles.isEmitting)
+        {
+            this.dustParticles.Play();
+        }
+        else if (!shouldEmit && this.dustParticles.isEmitting)
+        {
+            this.dustParticles.Stop();
+        }
+    }
+
     void FixedUpdate()
     {
         this.HandleJumping();
@@ -194,5 +218,6 @@ public class Character : MonoBehaviour
 
         this.SetAnimationState(inputMovement);
         this.HandleFootstepsSound(inputMovement);
+        this.HandleDustParticles(inputMovement);
     }
 }
