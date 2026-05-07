@@ -6,6 +6,7 @@ public class Character : MonoBehaviour
     private bool isJumping = false;
     private float jumpCooldownTimer;
     private CharacterController controller;
+    private Animator animator;
     private InputAction moveAction;
     private InputAction jumpAction;
     private Vector3 platformVelocity;
@@ -23,6 +24,11 @@ public class Character : MonoBehaviour
     [SerializeField]
     private Transform cameraTransform;
 
+    [SerializeField]
+    private AudioSource footstepsSound;
+    [SerializeField]
+    private AudioSource jumpSound;
+
     private Vector3 characterMovement;
     private Vector3 jumpVelocity;
     private Vector3 characterGravity;
@@ -30,6 +36,7 @@ public class Character : MonoBehaviour
     void Start()
     {
         this.controller = this.GetComponent<CharacterController>();
+        this.animator = this.GetComponent<Animator>();
         this.moveAction = InputSystem.actions.FindAction("Move");
         this.jumpAction = InputSystem.actions.FindAction("Jump");
         this.jumpCooldownTimer = 0.0f;
@@ -50,6 +57,11 @@ public class Character : MonoBehaviour
             this.jumpVelocity.y = this.jumpSpeed;
             this.jumpCooldownTimer = this.jumpCooldown;
             this.isJumping = true;
+
+            if (this.jumpSound != null)
+            {
+                this.jumpSound.Play();
+            }
         }
 
         if (this.jumpVelocity.y > 0.0f)
@@ -106,6 +118,34 @@ public class Character : MonoBehaviour
         }
     }
 
+    void SetAnimationState(Vector2 inputMovement)
+    {
+        this.animator.SetBool("IsJumping", this.isJumping);
+        this.animator.SetBool("IsRunning", inputMovement != Vector2.zero);
+        this.animator.SetFloat("MovementForward", inputMovement.magnitude);
+    }
+
+    void HandleFootstepsSound(Vector2 inputMovement)
+    {
+        if (this.footstepsSound == null)
+        {
+            return;
+        }
+
+        bool shouldPlay = inputMovement != Vector2.zero
+                          && this.controller.isGrounded
+                          && !this.isJumping;
+
+        if (shouldPlay && !this.footstepsSound.isPlaying)
+        {
+            this.footstepsSound.Play();
+        }
+        else if (!shouldPlay && this.footstepsSound.isPlaying)
+        {
+            this.footstepsSound.Stop();
+        }
+    }
+
     void FixedUpdate()
     {
         this.HandleJumping();
@@ -151,5 +191,8 @@ public class Character : MonoBehaviour
 
         var combinedMovement = this.characterMovement + this.platformVelocity * Time.fixedDeltaTime;
         this.controller.Move(combinedMovement);
+
+        this.SetAnimationState(inputMovement);
+        this.HandleFootstepsSound(inputMovement);
     }
 }
