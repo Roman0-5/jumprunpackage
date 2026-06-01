@@ -56,19 +56,18 @@ public class Enemy : MonoBehaviour
         this.transform.position += moveDirection * this.moveSpeed * Time.deltaTime;
 
         this.transform.forward = moveDirection;
+        Debug.Log($"Enemy bewegt sich. Ziel: {this.currentTarget.name}, Distanz: {direction.magnitude}");
     }
 
     void OnTriggerEnter(Collider other)
     {
         if (this.isSquashing)
-        {
             return;
-        }
 
-        if (other.CompareTag("Player"))
-        {
-            this.Squash();
-        }
+        if (!other.CompareTag("Player"))
+            return;
+
+        this.Squash();
     }
 
     void Squash()
@@ -94,4 +93,5 @@ public class Enemy : MonoBehaviour
             this.isSquashing = false;
         });
     }
+    public bool IsSquashing() => this.isSquashing;
 }

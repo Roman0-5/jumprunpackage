@@ -22,6 +22,9 @@ public class Character : MonoBehaviour
     [SerializeField]
     private float dampening;
     [SerializeField]
+    private float maxHealth = 100.0f;
+    private float currentHealth;
+    [SerializeField]
     private Transform cameraTransform;
 
     [SerializeField]
@@ -43,6 +46,8 @@ public class Character : MonoBehaviour
         this.moveAction = InputSystem.actions.FindAction("Move");
         this.jumpAction = InputSystem.actions.FindAction("Jump");
         this.jumpCooldownTimer = 0.0f;
+        this.currentHealth = this.maxHealth;
+        Debug.Log($"Start: maxHealth={this.maxHealth}, currentHealth={this.currentHealth}");
     }
 
     void HandleJumping()
@@ -219,5 +224,17 @@ public class Character : MonoBehaviour
         this.SetAnimationState(inputMovement);
         this.HandleFootstepsSound(inputMovement);
         this.HandleDustParticles(inputMovement);
+    }
+
+    public float getCurrentHealth() => this.currentHealth;
+
+    public float getMaxHealth() => this.maxHealth;
+
+
+    public void InflictDamage(float amount)
+    {
+        Debug.Log($"InflictDamage aufgerufen mit {amount}, vorher {this.currentHealth}");
+        this.currentHealth -= amount;
+        this.currentHealth = Mathf.Clamp(this.currentHealth, 0.0f, this.maxHealth);
     }
 }
